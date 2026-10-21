@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="HW2 multiple linear regression with feature selection, model evaluation and 95% prediction intervals, following CRISP-DM. Car Price and Student Performance from Kaggle, plus any CSV URL.">
+  <title>HW2 Multiple Linear Regression | Prediction Intervals</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="stylesheet" href="styles.css?v=hw2-v4">
+</head>
+<body>
+  <header class="topbar">
+    <div class="site-container nav-wrap">
+      <a class="brand" href="#top"><span class="brand-symbol">Σ</span> HW2 <strong>Multiple Linear Regression</strong></a>
+      <nav aria-label="主選單"><a href="#workspace">資料與設定</a><a href="#evaluation">特徵選取</a><a href="#intervals">預測區間</a><a href="#predictor">即時預測</a><a href="#crispdm">CRISP-DM</a></nav>
+      <span class="nav-label">AIoT-DA 2026 · HW2</span>
+    </div>
+  </header>
+
+  <main id="top">
+    <section class="hero">
+      <div class="site-container hero-grid">
+        <div>
+          <div class="eyebrow"><span class="signal"></span> CRISP-DM · Feature Selection · Prediction Interval</div>
+          <h1>Multiple Linear Regression<br><em>with 95% Prediction Intervals</em></h1>
+          <p class="hero-copy">兩個 Kaggle 題目（Car Price、Student Performance），也可以輸入任意公開 CSV 網址。網頁在瀏覽器裡完成特徵選取、模型評估，並畫出 95% 信賴區間與預測區間。</p>
+          <div class="hero-tags"><span>OLS Regression</span><span>5 Feature Selection Methods</span><span>95% CI &amp; PI</span><span>Any CSV URL</span></div>
+          <a href="#workspace" class="hero-link">開始分析 <span aria-hidden="true">↗</span></a>
+        </div>
+        <aside class="hero-panel" aria-label="專案摘要">
+          <div class="hero-panel-head"><span>REGRESSION WORKFLOW</span><span class="hero-dot">● ● ●</span></div>
+          <div class="formula">ŷ ± t · s · √(1 + h)</div>
+          <div class="workflow-mini"><span>CSV</span><b>→</b><span>Select</span><b>→</b><span>Fit</span><b>→</b><span>Interval</span></div>
+          <div class="panel-separator"></div>
+          <div class="panel-stat"><span>KAGGLE PROBLEMS</span><strong>02 <small>+ any CSV URL</small></strong></div>
+          <div class="panel-stat"><span>RAW FEATURES</span><strong>24 / 32 <small>car / student</small></strong></div>
+          <div class="panel-stat"><span>EXPERIMENT</span><strong>80 / 20 <small>random_state = 42</small></strong></div>
+        </aside>
+      </div>
+    </section>
+
+    <div class="site-container body-content">
+      <section id="workspace" class="section-block">
+        <div class="section-heading"><div><span class="section-index">01 / DATA &amp; PROBLEM</span><h2>選擇題目或匯入資料</h2><p>下拉選單切換兩個 Kaggle 題目；也可以上傳 CSV 或輸入任意公開 CSV 網址。</p></div><span class="section-status" id="sourceBadge">READY TO ANALYZE</span></div>
+        <div class="control-grid">
+          <div class="card form-card">
+            <div class="card-title"><span class="icon-square">01</span> 題目與模型 <small>Problem &amp; Algorithm</small></div>
+            <label for="datasetSelect">題目 / Problem</label>
+            <select id="datasetSelect"><option value="carprice">Problem 1：Car Price — 預測車價（24 個特徵）</option><option value="student">Problem 2：Student Performance — 預測數學期末成績 G3（32 個特徵）</option></select>
+            <div class="form-row"><div><label for="targetSelect">預測目標 (Y)</label><select id="targetSelect"></select></div><div><label for="methodSelect">查看特徵選取方法</label><select id="methodSelect"><option value="pearson">1. Pearson (Filter)</option><option value="selectkbest">2. SelectKBest (Filter)</option><option value="rfe">3. RFE (Wrapper)</option><option value="forward" selected>4. Forward SFS (Wrapper)</option><option value="lasso">5. Lasso (Embedded)</option></select></div></div>
+            <button id="runButton" class="btn btn-primary" type="button">重新計算五種方法與全部圖表 <span aria-hidden="true">→</span></button>
+            <p class="micro">與 scikit-learn 相同的 train_test_split：test_size = 0.2、random_state = 42。五種方法使用同一份測試集。</p>
+          </div>
+          <div class="card form-card secondary-card">
+            <div class="card-title"><span class="icon-square">02</span> 任意資料集 <small>Any Dataset</small></div>
+            <label for="csvFile">從電腦上傳 CSV</label>
+            <input type="file" id="csvFile" accept=".csv,text/csv" aria-label="選擇 CSV 檔案">
+            <label for="csvUrl">或輸入公開 CSV 網址（逗號、分號、Tab 分隔都可以）</label>
+            <div class="url-row"><input type="url" id="csvUrl" placeholder="https://raw.githubusercontent.com/.../file.csv"><button type="button" id="loadUrlButton" class="btn btn-outline">載入 URL</button></div>
+            <button type="button" id="exampleUrlButton" class="btn btn-outline" style="margin-top:8px">試試範例：50_Startups.csv</button>
+            <div class="source-note" id="dataStatus" role="status" aria-live="polite">兩個題目的資料已內建，離線也能操作。</div>
+            <div class="sample-link">資料來源：<a target="_blank" rel="noopener noreferrer" href="https://www.kaggle.com/datasets/hellbuoy/car-price-prediction">Car Price（Kaggle）↗</a> <a target="_blank" rel="noopener noreferrer" href="https://www.kaggle.com/datasets/uciml/student-alcohol-consumption">Student Performance（Kaggle）↗</a></div>
+          </div>
+        </div>
+        <div class="data-strip" id="dataSummary" aria-live="polite"></div>
+      </section>
+
+      <section class="section-block" id="benchmark">
+        <div class="section-heading"><div><span class="section-index">02 / BASELINE REGRESSION</span><h2>基準分析：RMSE 與 R-squared</h2><p id="referenceIntro">以固定的訓練測試切分逐步加入特徵，呈現 RMSE 與 R² 隨特徵數量的變化。</p></div><span class="section-status" id="benchmarkBadge">BASELINE · SEED 0</span></div>
+        <p class="chart-interaction-hint">點擊折線上的圓點，可顯示該 k 的精確分數與選用特徵；也可以用 Tab 選點後按 Enter。</p>
+        <div class="chart-grid benchmark-charts">
+          <article class="card chart-card benchmark-card"><h3>RMSE by Number of Features</h3><div class="chart-viewport benchmark-chart" id="referenceChartRMSE" aria-live="polite"></div></article>
+          <article class="card chart-card benchmark-card"><h3>R-squared by Number of Features</h3><div class="chart-viewport benchmark-chart" id="referenceChartR2" aria-live="polite"></div></article>
+        </div>
+        <div class="chart-point-detail" id="referencePointDetail" role="status" aria-live="polite">點擊任一資料點，即可查看對應 k 的 RMSE、R² 和選取特徵，並在下方表格同步反白。</div>
+        <article class="card table-card benchmark-table"><div class="card-heading"><div><h3>Feature Progression — 特徵數量比較</h3><p>依 Pearson 相關排序，逐步增加特徵並重新擬合模型。</p></div><span class="subtag" id="referenceSplit">seed=0 · test=20%</span></div>
+          <div class="scroll-table"><table><thead><tr><th>Number of Features</th><th>Selected Features</th><th>RMSE</th><th>R-squared</th></tr></thead><tbody id="referenceTable"></tbody></table></div>
+          <p class="micro" id="referenceNote"></p>
+        </article>
+      </section>
+
+      <section class="section-block" id="evaluation">
+        <div class="section-heading"><div><span class="section-index">03 / FEATURE SELECTION &amp; EVALUATION</span><h2>五種特徵選取演算法比較</h2><p>每種方法排序特徵後，逐一加入並以訓練集 5-fold CV RMSE 選 k；測試集只用來做最後評估。</p></div><div class="metric-switch"><label for="kSelect">檢視特徵數 k</label><select id="kSelect"></select></div></div>
+        <div class="metric-grid" id="metricGrid">
+          <div class="metric-card featured"><div class="metric-label">Holdout Test RMSE <span>↓</span></div><div class="metric-value" id="metricRMSE">—</div><div class="metric-sub">測試集平均平方誤差開根號</div></div>
+          <div class="metric-card"><div class="metric-label">Holdout Test R² <span>↑</span></div><div class="metric-value" id="metricR2">—</div><div class="metric-sub">對未見資料的解釋能力</div></div>
+          <div class="metric-card"><div class="metric-label">5-fold CV RMSE <span>↓</span></div><div class="metric-value" id="metricCV">—</div><div class="metric-sub">選擇最佳特徵數的依據</div></div>
+          <div class="metric-card"><div class="metric-label">Holdout Test MAE <span>↓</span></div><div class="metric-value" id="metricMAE">—</div><div class="metric-sub">預測值與真值的平均距離</div></div>
+        </div>
+        <div id="bestHint" class="best-hint"></div>
+        <div class="chart-grid">
+          <article class="card chart-card"><div class="card-heading"><div><h3>RMSE by Number of Features</h3><p>五種 Feature Selection 演算法的 Test RMSE；越低越好。</p></div><span class="subtag">↓ Error</span></div><div class="chart-viewport comparison-chart" id="chartRMSE"></div><div class="comparison-legend" id="legendRMSE"></div></article>
+          <article class="card chart-card"><div class="card-heading"><div><h3>R-squared by Number of Features</h3><p>五種 Feature Selection 演算法的 Test R²；越高越好。</p></div><span class="subtag">↑ Fit quality</span></div><div class="chart-viewport comparison-chart" id="chartR2"></div><div class="comparison-legend" id="legendR2"></div></article>
+        </div>
+        <div class="chart-point-detail" id="advancedPointDetail" role="status" aria-live="polite">點擊折線圖的任一資料點，可選取演算法和 k；點擊金色星號可查看原生 LassoCV。</div>
+        <div class="footnote-card comparison-footnote"><strong>圖例與模型差異</strong><p>五條折線分別代表 Pearson、SelectKBest、RFE、Forward SFS 與 Lasso 選取特徵後重新擬合 OLS 的測試結果。金色星號是保留 L1 收縮係數的 LassoCV 模型，估計方式不同。Pearson 與單變數 F 檢定通常得到相同的特徵排序，因此兩條線可能重疊。</p></div>
+        <article class="card table-card" style="margin-top:17px;margin-bottom:17px"><div class="card-heading"><div><h3>五種方法總比較</h3><p>每種方法各自用訓練集 5-fold CV 選 k，再用測試集評估該 k；星號是 LassoCV 原生模型。</p></div><span class="subtag">5 methods + LassoCV</span></div><div class="scroll-table"><table><thead><tr><th>Feature Selection</th><th>CV 最佳 k</th><th>最佳 CV RMSE</th><th>該 k 的 Test RMSE</th><th>該 k 的 Test R²</th><th>CV 選出的特徵</th></tr></thead><tbody id="comparisonBody"></tbody></table></div><p class="micro" id="lassoNativeSummary"></p></article>
+        <article class="card table-card"><div class="card-heading"><div><h3>Feature Selection Progression</h3><p>第 k 列 = 前 k 個特徵（每列只列出新加入的那一個，滑鼠移上去看完整組合）；以 <strong>CV RMSE 最小</strong>的 k 作為建議模型。</p></div><span class="subtag">Reproducible split</span></div><div class="scroll-table"><table><thead><tr><th>k</th><th>這一步加入的特徵</th><th>5-fold CV RMSE ↓</th><th>Test RMSE ↓</th><th>Test R² ↑</th><th>Train R²</th><th>狀態</th></tr></thead><tbody id="progressBody"></tbody></table></div></article>
+      </section>
+
+      <section class="section-block">
+        <div class="section-heading"><div><span class="section-index">04 / COEFFICIENTS &amp; DIAGNOSTICS</span><h2>解釋模型，檢查殘差</h2><p>目前選定的方法與 k 對應的回歸係數、VIF、測試集預測與殘差。</p></div><div class="button-group"><button class="btn btn-outline" id="csvButton" type="button">匯出預測 CSV（含區間）</button><button class="btn btn-dark" id="reportButton" type="button">匯出分析報告 JSON ↗</button></div></div>
+        <div class="diagnostics-grid">
+          <article class="card"><div class="card-heading"><div><h3>Regression Equation</h3><p>以原始資料單位表示的回歸係數。</p></div></div><div class="equation-box" id="equation">—</div><div class="small-tagline">目前模型的特徵 <span id="activeFeatures"></span></div><div class="scroll-table coeff-scroll"><table><thead><tr><th>變數</th><th>估計係數 β</th><th>VIF 共線性</th></tr></thead><tbody id="coeffBody"></tbody></table></div><p class="micro">解讀：其他變數固定時，自變數增加 1 單位的平均預測變化；VIF &gt; 5 要留意共線性。</p></article>
+          <article class="card"><div class="card-heading"><div><h3>Actual vs. Predicted</h3><p>測試集散佈圖；點愈接近對角線，預測誤差愈小。</p></div><span class="subtag">Holdout 20%</span></div><div class="chart-viewport scatter-area" id="chartScatter"></div><div class="small-tagline" id="scatterSummary"></div></article>
+        </div>
+        <article class="card table-card"><div class="card-heading"><div><h3>Holdout Residual Diagnostics</h3><p>殘差 = 真值 − 預測；依絕對誤差排序，先檢查最不準確的樣本。</p></div><span class="subtag" id="residualCount">TEST SAMPLES</span></div><div class="scroll-table"><table><thead><tr><th>資料列</th><th>真實值</th><th>預測值</th><th>殘差 (真實−預測)</th><th>絕對誤差</th><th>誤差比例</th></tr></thead><tbody id="residualBody"></tbody></table></div></article>
+      </section>
+
+      <section id="intervals" class="section-block">
+        <div class="section-heading"><div><span class="section-index">05 / PREDICTION INTERVAL</span><h2>預測圖：95% 信賴區間與預測區間</h2><p>信賴區間（CI）是「平均值」的不確定性；預測區間（PI）是「單一新樣本」會落在哪裡，所以一定比較寬。</p></div><span class="section-status">HOLDOUT · 95%</span></div>
+        <div class="metric-grid">
+          <div class="metric-card featured"><div class="metric-label">PI 覆蓋率 <span>≈ 95%</span></div><div class="metric-value" id="piCoverage">—</div><div class="metric-sub">測試集真實值落在 95% PI 內的比例</div></div>
+          <div class="metric-card"><div class="metric-label">平均 PI 寬度</div><div class="metric-value" id="piWidth">—</div><div class="metric-sub">ŷ ± t · s · √(1 + h)</div></div>
+          <div class="metric-card"><div class="metric-label">平均 CI 寬度</div><div class="metric-value" id="ciWidth">—</div><div class="metric-sub">ŷ ± t · s · √h</div></div>
+          <div class="metric-card"><div class="metric-label">t 臨界值（雙尾 95%）</div><div class="metric-value" id="piT">—</div><div class="metric-sub" id="piStats">—</div></div>
+        </div>
+        <article class="card chart-card" style="margin-top:17px"><div class="card-heading"><div><h3>Prediction with 95% CI &amp; PI</h3><p>測試樣本依預測值排序；深色帶是 CI、淺色帶是 PI，綠點在 PI 內、紅點在 PI 外。</p></div><span class="subtag">t-distribution</span></div><div class="chart-viewport" id="intervalChart"></div><div class="small-tagline" id="intervalSummary"></div></article>
+        <div class="footnote-card"><strong>公式</strong><p>h = 1/n + x₀ᵀ(XᵀX)⁻¹x₀（x₀ 以訓練集平均置中）；s = √(SSE / (n − p − 1))；t 取自由度 n − p − 1 的 t 分布 97.5% 分位數。區間假設誤差獨立、常態且變異數固定，覆蓋率明顯低於 95% 時代表這些假設不成立。</p></div>
+      </section>
+
+      <section id="predictor" class="section-block">
+        <div class="section-heading"><div><span class="section-index">06 / INTERACTIVE PREDICTION</span><h2>即時輸入，模擬預測</h2><p>自行修改特徵值，用目前選定的 OLS 模型重新計算預測值與 95% 區間。</p></div></div>
+        <div class="predict-grid"><div class="card"><div class="card-heading"><div><h3>輸入預測條件</h3><p>數值預先填入資料集的中位數，類別預先填入第一個類別。</p></div></div><form id="predictForm" class="input-grid"></form></div><div class="prediction-result"><span>MODEL OUTPUT</span><h3 id="predictTitle">預測結果</h3><div class="pred-number" id="predNumber">—</div><div class="prediction-model">95% 預測區間（單一新樣本）<strong id="predPI">—</strong></div><div class="prediction-model">95% 信賴區間（平均值）<strong id="predCI">—</strong></div><div class="prediction-model" id="predModel"></div><div class="prediction-foot">此數值為回歸模型估計，不是保證。</div></div></div>
+      </section>
+
+      <section id="crispdm" class="section-block">
+        <div class="section-heading"><div><span class="section-index">07 / CRISP-DM</span><h2>CRISP-DM 六個步驟</h2><p>內容隨目前的題目與模型即時更新。</p></div></div>
+        <div class="method-grid crisp-grid">
+          <div class="method-step"><span>01</span><h3>Business Understanding</h3><p id="crispBU">—</p></div>
+          <div class="method-step"><span>02</span><h3>Data Understanding</h3><p id="crispDU">—</p></div>
+          <div class="method-step"><span>03</span><h3>Data Preparation</h3><p id="crispDP">—</p></div>
+          <div class="method-step"><span>04</span><h3>Modeling</h3><p id="crispMO">—</p></div>
+          <div class="method-step"><span>05</span><h3>Evaluation</h3><p id="crispEV">—</p></div>
+          <div class="method-step"><span>06</span><h3>Deployment</h3><p id="crispDE">—</p></div>
+        </div>
+        <div class="footnote-card"><strong>統計與資料限制</strong><p>R² 不代表因果關係。CV 選模仍可能有選擇偏差，測試集只用在最後評估。Student Performance 的 G1、G2 是同一學年前兩次成績，加入後預測很準，但也代表要等到學期中段才能預測；拿掉 G1、G2 重跑，五種方法的測試 R² 都只剩約 0.09（詳見 REPORT.md）。</p></div>
+      </section>
+    </div>
+  </main>
+  <footer class="footer"><div class="site-container footer-wrap"><span>AIoT-DA 2026 · HW2 MULTIPLE LINEAR REGRESSION</span><span>Data: Car Price Prediction (Kaggle, hellbuoy) · Student Performance (Kaggle, uciml / UCI)</span></div></footer>
+  <script src="data.js?v=hw2-v4"></script>
+  <script src="analysis.js?v=hw2-v4"></script>
+  <script src="app.js?v=hw2-v4"></script>
+</body>
+</html>
