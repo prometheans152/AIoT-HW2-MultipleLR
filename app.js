@@ -33,9 +33,9 @@
   function status(message, error = false) {
     el('dataStatus').textContent = message;
     el('dataStatus').classList.toggle('error', error);
-    el('sourceBadge').textContent = error ? 'CHECK YOUR CSV' : 'MODEL READY';
-    el('sourceBadge').style.background = error ? '#fff2f1' : '#edf7f3';
-    el('sourceBadge').style.color = error ? '#bd5655' : '#23795e';
+    el('sourceBadge').textContent = error ? '請檢查 CSV' : '模型就緒';
+    el('sourceBadge').style.background = error ? '#f8e9e1' : '#e3eee7';
+    el('sourceBadge').style.color = error ? '#c2562f' : '#1f5f4a';
   }
   function getRaw(key) {
     if (key === 'custom') return state.custom;
@@ -150,28 +150,28 @@
     let svg=`<svg viewBox="0 0 ${W} ${H}" role="img" xmlns="http://www.w3.org/2000/svg" aria-label="${esc(title)} by Number of Features — baseline regression">`;
     for(let j=0;j<=5;j++){
       const v=lo+(hi-lo)*j/5;
-      svg+=`<line x1="${L}" y1="${y(v)}" x2="${W-R}" y2="${y(v)}" stroke="#e6e8ec" stroke-width="1"/>
-        <text x="${L-11}" y="${y(v)+4}" text-anchor="end" fill="#687688" font-size="11">${esc(tickLabel(v))}</text>`;
+      svg+=`<line x1="${L}" y1="${y(v)}" x2="${W-R}" y2="${y(v)}" stroke="#e8e3d8" stroke-width="1"/>
+        <text x="${L-11}" y="${y(v)+4}" text-anchor="end" fill="#6b716a" font-size="11">${esc(tickLabel(v))}</text>`;
     }
-    svg+=`<line x1="${L}" y1="${T}" x2="${L}" y2="${H-B}" stroke="#8390a5"/>
-      <line x1="${L}" y1="${H-B}" x2="${W-R}" y2="${H-B}" stroke="#8390a5"/>`;
+    svg+=`<line x1="${L}" y1="${T}" x2="${L}" y2="${H-B}" stroke="#858a83"/>
+      <line x1="${L}" y1="${H-B}" x2="${W-R}" y2="${H-B}" stroke="#858a83"/>`;
     for(let k=1;k<=points.length;k++){
-      svg+=`<text x="${x(k)}" y="${H-B+19}" text-anchor="middle" font-size="12" fill="#556477">${k}</text>`;
+      svg+=`<text x="${x(k)}" y="${H-B+19}" text-anchor="middle" font-size="12" fill="#59605a">${k}</text>`;
     }
     const series=good.map((p,i)=>`${i?'L':'M'}${x(p.k).toFixed(2)} ${y(p.value).toFixed(2)}`).join(' ');
-    svg+=`<path d="${series}" fill="none" stroke="#1f77b4" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>`;
+    svg+=`<path d="${series}" fill="none" stroke="#1f5f4a" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>`;
     for(const p of good){
       const selected=state.baselineSelectedK===p.k;
       const label=`基準分析 k=${p.k}，${title} ${p.value.toFixed(6)}。按 Enter 查看資料`;
       svg+=`<g class="chart-point ${selected?'chart-point-active':''}" data-chart-point="baseline" data-k="${p.k}"
         role="button" tabindex="0" aria-pressed="${selected}" aria-label="${esc(label)}">
         <circle class="chart-hit-area" cx="${x(p.k)}" cy="${y(p.value)}" r="15"/>
-        ${selected?`<circle class="chart-selected-ring" cx="${x(p.k)}" cy="${y(p.value)}" r="9" stroke="#1f77b4"/>`:''}
-        <circle cx="${x(p.k)}" cy="${y(p.value)}" r="4.3" fill="#1f77b4"/>
+        ${selected?`<circle class="chart-selected-ring" cx="${x(p.k)}" cy="${y(p.value)}" r="9" stroke="#1f5f4a"/>`:''}
+        <circle cx="${x(p.k)}" cy="${y(p.value)}" r="4.3" fill="#1f5f4a"/>
         <title>${esc(label)}</title></g>`;
     }
-    svg+=`<text x="${(L+W-R)/2}" y="${H-9}" text-anchor="middle" font-size="13" fill="#384c69">Number of Features</text>
-      <text x="19" y="${H/2}" transform="rotate(-90 19 ${H/2})" text-anchor="middle" font-size="13" fill="#384c69">${esc(title)}</text></svg>`;
+    svg+=`<text x="${(L+W-R)/2}" y="${H-9}" text-anchor="middle" font-size="13" fill="#3d4540">特徵數 k</text>
+      <text x="19" y="${H/2}" transform="rotate(-90 19 ${H/2})" text-anchor="middle" font-size="13" fill="#3d4540">${esc(title)}</text></svg>`;
     return svg;
   }
   function renderBaseline() {
@@ -186,7 +186,7 @@
       <td class="benchmark-number">${Number.isFinite(p.testing?.r2)?p.testing.r2.toFixed(6):'—'}</td>
     </tr>`).join('');
     const original=state.key==='startups'&&baseline.exactOrder;
-    el('benchmarkBadge').textContent=original?'BASELINE · SEED 0':'CUSTOM BASELINE · SEED 0';
+    el('benchmarkBadge').textContent='基準 · seed 0';
     el('referenceIntro').textContent=original
       ? '50 Startups 多元線性回歸：80/20 資料切分、random_state=0，以逐步增加特徵的 OLS 模型呈現 RMSE 與 R²。'
       : `使用相同基準分析流程處理 ${state.sourceName}，以 Pearson 排序前 ${baseline.progression.length} 個特徵。不同資料集的指標不適合直接比較。`;
@@ -298,14 +298,14 @@
     let svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="五種方法 ${isRMSE?'RMSE':'R-squared'} 對特徵數的比較圖">`;
     for(let tick=0;tick<=5;tick++) {
       const value=lo+(hi-lo)*tick/5;
-      svg+=`<line x1="${L}" x2="${W-R}" y1="${y(value)}" y2="${y(value)}" stroke="#e5eaf3"/>
-        <text x="${L-10}" y="${y(value)+4}" text-anchor="end" fill="#8998ac" font-size="12">${esc(label(value))}</text>`;
+      svg+=`<line x1="${L}" x2="${W-R}" y1="${y(value)}" y2="${y(value)}" stroke="#e7e1d4"/>
+        <text x="${L-10}" y="${y(value)+4}" text-anchor="end" fill="#8c918b" font-size="12">${esc(label(value))}</text>`;
     }
     for(let k=1;k<=count;k++) {
-      svg+=`<text x="${x(k)}" y="${H-B+20}" text-anchor="middle" fill="#718197" font-size="11">${k}</text>`;
+      svg+=`<text x="${x(k)}" y="${H-B+20}" text-anchor="middle" fill="#757b74" font-size="11">${k}</text>`;
     }
-    svg+=`<text x="${(L+W-R)/2}" y="${H-5}" text-anchor="middle" fill="#748199" font-size="13">Number of Features (k)</text>
-      <line x1="${x(state.selectedK)}" x2="${x(state.selectedK)}" y1="${T}" y2="${H-B}" stroke="#a8b4d2" stroke-dasharray="3 6"/>`;
+    svg+=`<text x="${(L+W-R)/2}" y="${H-5}" text-anchor="middle" fill="#7a807a" font-size="13">特徵數 k</text>
+      <line x1="${x(state.selectedK)}" x2="${x(state.selectedK)}" y1="${T}" y2="${H-B}" stroke="#b9b3a5" stroke-dasharray="3 6"/>`;
     function shape(k,v,type,color) {
       const cx=x(k),cy=y(v),r=4.2;
       if(type===1)return `<rect x="${cx-r}" y="${cy-r}" width="${r*2}" height="${r*2}" fill="#fff" stroke="${color}" stroke-width="2"/>`;
@@ -344,8 +344,8 @@
       const nativeLabel=`LassoCV 原生 L1 收縮模型，k=${native.k}，${isRMSE?'RMSE':'R²'} ${extra.toFixed(5)}。按 Enter 查看原生模型`;
       svg+=`<g class="chart-point ${nativeActive?'chart-point-active':''}" data-chart-point="native-lasso"
         data-k="${native.k}" role="button" tabindex="0" aria-pressed="${nativeActive}" aria-label="${esc(nativeLabel)}">
-        ${nativeActive?`<circle class="chart-selected-ring" cx="${centerX}" cy="${centerY}" r="14" stroke="#bc8a1c"/>`:''}
-        <polygon points="${star}" fill="#f8c34d" stroke="#694819" stroke-width="1.8"/>
+        ${nativeActive?`<circle class="chart-selected-ring" cx="${centerX}" cy="${centerY}" r="14" stroke="#b8892b"/>`:''}
+        <polygon points="${star}" fill="#e2b14a" stroke="#5e4214" stroke-width="1.8"/>
         <circle class="chart-hit-area" cx="${centerX}" cy="${centerY}" r="13"/>
         <title>${esc(nativeLabel)}</title></g>`;
     }
@@ -426,16 +426,16 @@
     let svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="測試集真實值與預測值散佈圖">`;
     for(let i=0;i<=4;i++){
       const v=lo+i*(hi-lo)/4;
-      svg += `<path d="M${x(v)} ${T} V${H-B} M${L} ${y(v)} H${W-R}" stroke="#e8edf6"/>
-        <text x="${x(v)}" y="${H-B+20}" text-anchor="middle" fill="#9ba5b5" font-size="10">${esc(shortNum(v))}</text>
-        <text x="${L-8}" y="${y(v)+4}" text-anchor="end" fill="#9ba5b5" font-size="10">${esc(shortNum(v))}</text>`;
+      svg += `<path d="M${x(v)} ${T} V${H-B} M${L} ${y(v)} H${W-R}" stroke="#ebe5d8"/>
+        <text x="${x(v)}" y="${H-B+20}" text-anchor="middle" fill="#9da19a" font-size="10">${esc(shortNum(v))}</text>
+        <text x="${L-8}" y="${y(v)+4}" text-anchor="end" fill="#9da19a" font-size="10">${esc(shortNum(v))}</text>`;
     }
-    svg += `<path d="M${x(lo)} ${y(lo)} L${x(hi)} ${y(hi)}" stroke="#8f9bc2" stroke-width="2" stroke-dasharray="6 5"/>`;
+    svg += `<path d="M${x(lo)} ${y(lo)} L${x(hi)} ${y(hi)}" stroke="#a39d8f" stroke-width="2" stroke-dasharray="6 5"/>`;
     for(let i=0;i<actual.length;i++){
-      svg += `<circle cx="${x(actual[i])}" cy="${y(predicted[i])}" r="${actual.length>200?3:4}" fill="#5067e6" fill-opacity=".67"><title>Actual ${fmt(actual[i])}; Predicted ${fmt(predicted[i])}</title></circle>`;
+      svg += `<circle cx="${x(actual[i])}" cy="${y(predicted[i])}" r="${actual.length>200?3:4}" fill="#1f5f4a" fill-opacity=".67"><title>Actual ${fmt(actual[i])}; Predicted ${fmt(predicted[i])}</title></circle>`;
     }
-    svg += `<text x="${(L+W-R)/2}" y="${H-3}" text-anchor="middle" fill="#8491a7" font-size="12">Actual value</text>
-      <text x="16" y="${H/2}" text-anchor="middle" fill="#8491a7" font-size="12" transform="rotate(-90 16 ${H/2})">Predicted value</text></svg>`;
+    svg += `<text x="${(L+W-R)/2}" y="${H-3}" text-anchor="middle" fill="#868b84" font-size="12">Actual value</text>
+      <text x="16" y="${H/2}" text-anchor="middle" fill="#868b84" font-size="12" transform="rotate(-90 16 ${H/2})">Predicted value</text></svg>`;
     el('chartScatter').innerHTML=svg;
     el('scatterSummary').innerHTML = `測試樣本 <strong>${actual.length}</strong> 筆；R² = <strong>${fmt(p.testing.r2,4)}</strong>，RMSE = <strong>${esc(currency(p.testing.rmse))}</strong>（${esc(unitName())}）。`;
   }
@@ -449,7 +449,7 @@
     el('residualBody').innerHTML = pairs.slice(0,20).map(r=>`<tr><td>#${r.id}</td><td>${fmt(r.y)}</td><td>${fmt(r.pred)}</td>
       <td class="${Math.abs(r.err)>p.testing.rmse*1.6?'bad-value':''}">${r.err>=0?'+':''}${fmt(r.err)}</td>
       <td>${fmt(Math.abs(r.err))}</td><td>${Math.abs(r.y)>1e-12?fmt(Math.abs(r.err/r.y)*100,1)+'%':'—'}</td></tr>`).join('');
-    el('residualCount').textContent = `${pairs.length} TEST ROWS · TOP ${Math.min(20,pairs.length)}`;
+    el('residualCount').textContent = `測試 ${pairs.length} 筆 · 列出前 ${Math.min(20,pairs.length)} 筆`;
   }
   // Test samples sorted by prediction, with 95% confidence (mean) and prediction (new value) bands.
   function intervalChart(s) {
@@ -465,26 +465,26 @@
     let svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="測試集預測值與 95% 信賴區間、預測區間">`;
     for (let j = 0; j <= 5; j++) {
       const v = lo + (hi - lo) * j / 5;
-      svg += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="#e5eaf3"/>
-        <text x="${L - 9}" y="${y(v) + 4}" text-anchor="end" fill="#8998ac" font-size="12">${esc(shortNum(v))}</text>`;
+      svg += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="#e7e1d4"/>
+        <text x="${L - 9}" y="${y(v) + 4}" text-anchor="end" fill="#8c918b" font-size="12">${esc(shortNum(v))}</text>`;
     }
-    svg += `<polygon points="${band('piLow', 'piHigh')}" fill="#5b8def" fill-opacity=".16"/>
-      <polygon points="${band('ciLow', 'ciHigh')}" fill="#5b8def" fill-opacity=".38"/>
-      <polyline points="${items.map((it, i) => `${x(i).toFixed(1)},${y(it.fit).toFixed(1)}`).join(' ')}" fill="none" stroke="#1f4fbf" stroke-width="2.2"/>`;
+    svg += `<polygon points="${band('piLow', 'piHigh')}" fill="#5f8f7a" fill-opacity=".16"/>
+      <polygon points="${band('ciLow', 'ciHigh')}" fill="#5f8f7a" fill-opacity=".38"/>
+      <polyline points="${items.map((it, i) => `${x(i).toFixed(1)},${y(it.fit).toFixed(1)}`).join(' ')}" fill="none" stroke="#163f32" stroke-width="2.2"/>`;
     items.forEach((it, i) => {
       const inside = it.actual >= it.piLow && it.actual <= it.piHigh;
-      svg += `<circle cx="${x(i)}" cy="${y(it.actual)}" r="${items.length > 120 ? 2.6 : 3.6}" fill="${inside ? '#2b8a54' : '#d0443e'}">
+      svg += `<circle cx="${x(i)}" cy="${y(it.actual)}" r="${items.length > 120 ? 2.6 : 3.6}" fill="${inside ? '#2f7d63' : '#c2562f'}">
         <title>資料列 #${it.id}：真實 ${fmt(it.actual)}；預測 ${fmt(it.fit)}；95% PI [${fmt(it.piLow)}, ${fmt(it.piHigh)}]</title></circle>`;
     });
-    const legend = [['#5b8def', .16, '95% 預測區間 PI'], ['#5b8def', .38, '95% 信賴區間 CI'], ['#1f4fbf', 1, '預測值 ŷ']];
+    const legend = [['#5f8f7a', .16, '95% 預測區間 PI'], ['#5f8f7a', .38, '95% 信賴區間 CI'], ['#163f32', 1, '預測值 ŷ']];
     legend.forEach(([c, o, t], i) => {
       svg += `<rect x="${L + i * 170}" y="9" width="16" height="12" fill="${c}" fill-opacity="${o}"/>
-        <text x="${L + i * 170 + 22}" y="20" font-size="12" fill="#556477">${t}</text>`;
+        <text x="${L + i * 170 + 22}" y="20" font-size="12" fill="#59605a">${t}</text>`;
     });
-    svg += `<circle cx="${L + 518}" cy="15" r="4" fill="#2b8a54"/><text x="${L + 528}" y="20" font-size="12" fill="#556477">真實值（在 PI 內）</text>
-      <circle cx="${L + 668}" cy="15" r="4" fill="#d0443e"/><text x="${L + 678}" y="20" font-size="12" fill="#556477">真實值（在 PI 外）</text>
-      <text x="${(L + W - R) / 2}" y="${H - 10}" text-anchor="middle" fill="#748199" font-size="13">測試樣本（依預測值由小到大排序）</text>
-      <text x="18" y="${H / 2}" transform="rotate(-90 18 ${H / 2})" text-anchor="middle" fill="#748199" font-size="13">${esc(state.dataset.target)}</text></svg>`;
+    svg += `<circle cx="${L + 518}" cy="15" r="4" fill="#2f7d63"/><text x="${L + 528}" y="20" font-size="12" fill="#59605a">真實值（在 PI 內）</text>
+      <circle cx="${L + 668}" cy="15" r="4" fill="#c2562f"/><text x="${L + 678}" y="20" font-size="12" fill="#59605a">真實值（在 PI 外）</text>
+      <text x="${(L + W - R) / 2}" y="${H - 10}" text-anchor="middle" fill="#7a807a" font-size="13">測試樣本（依預測值由小到大排序）</text>
+      <text x="18" y="${H / 2}" transform="rotate(-90 18 ${H / 2})" text-anchor="middle" fill="#7a807a" font-size="13">${esc(state.dataset.target)}</text></svg>`;
     return svg;
   }
   function renderIntervals() {

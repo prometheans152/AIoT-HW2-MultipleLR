@@ -566,11 +566,11 @@
         ? '由於模型含截距及另外兩個州別編碼，State_California 會產生完全共線性；第五個獨立特徵使用 Administration。' : null };
   }
   const COMPARISON_METHODS = [
-    {id:'pearson',name:'Pearson (Filter)',color:'#31679f'},
-    {id:'selectkbest',name:'SelectKBest (Filter)',color:'#df9a2c'},
-    {id:'rfe',name:'RFE (Wrapper)',color:'#2b8a54'},
-    {id:'forward',name:'Forward SFS (Wrapper)',color:'#b2565a'},
-    {id:'lasso',name:'Lasso (Embedded)',color:'#8760ab'}
+    {id:'pearson',name:'Pearson (Filter)',color:'#1f5f4a'},
+    {id:'selectkbest',name:'SelectKBest (Filter)',color:'#c8962d'},
+    {id:'rfe',name:'RFE (Wrapper)',color:'#4f6d8f'},
+    {id:'forward',name:'Forward SFS (Wrapper)',color:'#c2562f'},
+    {id:'lasso',name:'Lasso (Embedded)',color:'#8a4f7d'}
   ];
   function compareAllMethods(dataset,seed=42) {
     const results = {};
